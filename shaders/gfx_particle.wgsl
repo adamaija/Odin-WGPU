@@ -15,8 +15,26 @@ struct ParticleUniform {
     _pad2: f32,
 };
 
+struct Globals {
+    time: f32,
+};
+
+@group(0) @binding(0)
+var<uniform> globals: Globals;
+
 @group(0) @binding(1)
 var<uniform> particle: ParticleUniform;
+
+struct ParamsUniform {
+    mean: vec3<f32>,
+    _pad0: f32,
+
+    dev: vec3<f32>,
+    _pad1: f32,
+};
+
+@group(0) @binding(2)
+var<uniform> params: ParamsUniform;
 
 
 struct VertexInput {
@@ -51,7 +69,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     let p = normalize(input.v_pos);
 
     let color = vec3<f32>(
-        0.5 + 0.5 * sin(p.x * 3.0),
+        0.5 + 0.5 * sin(p.x * 3.0 ),
         0.5 + 0.5 * sin(p.y * 3.0 + 2.0),
         0.5 + 0.5 * sin(p.z * 3.0 + 4.0)
     );

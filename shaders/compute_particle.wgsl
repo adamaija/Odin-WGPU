@@ -8,8 +8,18 @@ struct Particle {
     life: f32,
 };
 
+struct ParamsUniform {
+    mean: vec3<f32>,
+    _pad0: f32,
+
+    dev: vec3<f32>,
+    _pad1: f32,
+};
+
 @group(0) @binding(0) var<storage, read_write> particles: array<Particle>;
 @group(0) @binding(1) var<uniform> dt: f32;
+@group(0) @binding(2)
+var<uniform> params: ParamsUniform;
 
 // Tells wgpu that this function is a valid compute pipeline entry_point
 @compute

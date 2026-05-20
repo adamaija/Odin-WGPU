@@ -23,13 +23,16 @@ g := struct {
     running:        bool,
     reset:          bool,
     rotate:         bool,
-    params:         SimParams
+    params:         SimParams,
+
+    params_dirty: bool
 } {
     rotate = true,
     params = {
         dev = {20, 50, 20},
         mean = {20, 50, 20}
-    }
+    },
+    params_dirty = false,
 }
 
 SimParams :: struct {
@@ -67,7 +70,7 @@ frame :: proc() {
 
 get_relative_mouse_movement :: proc() -> [2]i32 {
     delta := g.mouse_delta
-    g.mouse_delta = 0
+    g.mouse_delta = {0, 0}
     return delta
 }
 
@@ -142,6 +145,11 @@ update :: proc() {
     g.mouse_delta = 0;
     if g.rotate do camera.yaw += g.dt * 10
     maybe_reset()
+    if g.params_dirty {
+        create_particles()
+        update_params_gpu()
+        g.params_dirty = false
+    }
 }
 
 

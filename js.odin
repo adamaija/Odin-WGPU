@@ -64,14 +64,17 @@ get_zoom :: proc() -> f32 {
 	return camera.distance
 }
 
+
 @(export)
 set_dev :: proc(x,y,z:f32) {
-	g.params.dev = {x,y,z}
+    g.params.dev = {x,y,z}
+    g.params_dirty = true
 }
 
 @(export)
 set_mean :: proc(x,y,z:f32) {
-	g.params.mean = {x,y,z}
+    g.params.mean = {x,y,z}
+    g.params_dirty = true
 }
 
 /* tässä uus */
@@ -114,6 +117,29 @@ set_particle_size :: proc(v: f32) {
 		},
 		size_of(ParticleUniform),
 	)
+}
+
+@(export)
+update_params_gpu :: proc() {
+    r := &g.r
+
+    data := ParamsUniform{
+        mean = g.params.mean,
+        dev  = g.params.dev,
+    }
+
+    wgpu.QueueWriteBuffer(
+        r.queue,
+        r.params_ubo,
+        0,
+        &data,
+        size_of(data),
+    )
+}
+
+@(export)
+reset_particles :: proc() {
+    g.reset = true
 }
 
 @(export)

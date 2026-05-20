@@ -33,6 +33,7 @@ Renderer :: struct {
     ubo:                        wgpu.Buffer,
     particle_ubo: wgpu.Buffer,
     particle_size: f32,
+    params_ubo: wgpu.Buffer,
     ubo_bind_group:             wgpu.BindGroup,
 
     depth_texture:              Texture,
@@ -69,6 +70,13 @@ ParticleUniform :: struct {
 	_pad1: f32,
 	_pad2: f32,
 } /* hmmm */
+
+ParamsUniform :: struct {
+    mean: [3]f32,
+    _pad0: f32,
+    dev: [3]f32,
+    _pad1: f32,
+} /* hmmm?? */
 
 Texture :: struct {
     t: wgpu.Texture,
@@ -171,10 +179,18 @@ setup_gfx :: proc() {
         usage = {.Uniform, .CopyDst},
     }, ParticleUniform{size = 1.0}) /* uus */
 
+    r.params_ubo = wgpu.DeviceCreateBuffer(
+        r.device,
+        &wgpu.BufferDescriptor{
+            usage = {.Uniform, .CopyDst},
+            size  = size_of(ParamsUniform),
+        },
+    )
+
     ubo_bind_group_layout := wgpu.DeviceCreateBindGroupLayout(r.device, &{ /* muok*/
         label = "ubo_bind_group_layout",
 
-        entryCount = 2,
+        entryCount = 3,
         entries = raw_data([]wgpu.BindGroupLayoutEntry{
             {
                 binding = 0,
@@ -190,6 +206,13 @@ setup_gfx :: proc() {
                     type = .Uniform,
                 },
             },
+            {
+                binding = 2,
+                visibility = {.Vertex, .Fragment},
+                buffer = {
+                    type = .Uniform,
+                },
+            },
         }),
     })
     ; assert(ubo_bind_group_layout != nil)
@@ -199,7 +222,7 @@ setup_gfx :: proc() {
         label = "ubo_bind_group",
         layout = ubo_bind_group_layout,
 
-        entryCount = 2,
+        entryCount = 3,
         entries = raw_data([]wgpu.BindGroupEntry{
             {
                 binding = 0,
@@ -210,6 +233,11 @@ setup_gfx :: proc() {
                 binding = 1,
                 buffer = r.particle_ubo,
                 size = wgpu.BufferGetSize(r.particle_ubo),
+            },
+            {
+                binding = 2,
+                buffer = r.params_ubo,
+                size = wgpu.BufferGetSize(r.params_ubo),
             },
         }),
     }); assert(r.ubo_bind_group != nil) /* tää */
